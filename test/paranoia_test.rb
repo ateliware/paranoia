@@ -29,6 +29,7 @@ def setup!
     'related_models' => 'parent_model_id INTEGER, parent_model_with_counter_cache_column_id INTEGER, deleted_at DATETIME',
     'asplode_models' => 'parent_model_id INTEGER, deleted_at DATETIME',
     'employers' => 'name VARCHAR(32), deleted_at DATETIME',
+    'users' => 'name VARCHAR(32)',
     'employees' => 'deleted_at DATETIME',
     'jobs' => 'employer_id INTEGER NOT NULL, employee_id INTEGER NOT NULL, deleted_at DATETIME',
     'custom_column_models' => 'destroyed_at DATETIME',
@@ -701,9 +702,13 @@ class ParanoiaTest < test_framework
   end
 
   def test_validates_uniqueness_still_works_on_non_deleted_records
-    a = Employer.create!(name: "A")
+    Employer.create!(name: "A")
     b = Employer.new(name: "A")
     refute b.valid?
+  end
+
+  def test_validates_uniqueness_still_works_on_non_paranoid_model
+    assert User.create name: 'user1'
   end
 
   def test_i_am_the_destroyer
@@ -940,6 +945,10 @@ class Employee < ActiveRecord::Base
   acts_as_paranoid
   has_many :jobs
   has_many :employers, :through => :jobs
+end
+
+class User < ActiveRecord::Base
+  validates_uniqueness_of :name
 end
 
 class Job < ActiveRecord::Base
